@@ -66,11 +66,7 @@ export default function GamaCategorizer() {
                   y: isActive ? -8 : 0,
                 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)] ${
-                  g.view === 'top'
-                    ? 'w-[58%] max-w-[220px]'
-                    : 'w-[92%] max-w-[380px]'
-                }`}
+                className="absolute left-1/2 top-1/2 w-[92%] max-w-[380px] -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
               />
 
               {/* Contenido */}

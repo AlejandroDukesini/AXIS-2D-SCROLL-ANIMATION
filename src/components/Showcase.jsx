@@ -10,7 +10,7 @@ import {
 import { Gauge, Zap, Tag } from 'lucide-react'
 import { GAMAS } from '../lib/shared'
 
-// Modelos de la galería (reusamos el Mazda con distintos tintes)
+// Modelos de la galería (una imagen real por gama)
 const MODELS = GAMAS.map((g) => ({
   ...g,
   specs: [
@@ -79,11 +79,7 @@ function ModelCard({ model }) {
             : { clipPath: 'inset(0 100% 0 0)', opacity: 0 }
         }
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className={`absolute drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)] ${
-          model.view === 'top'
-            ? 'right-[-4%] top-1/2 w-[52%] -translate-y-1/2 rotate-90'
-            : 'right-[-4%] top-[42%] w-[86%] -translate-y-1/2'
-        }`}
+        className="absolute right-[-4%] top-[42%] w-[86%] -translate-y-1/2 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
       />
 
       <div className="relative z-10">

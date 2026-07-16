@@ -26,7 +26,6 @@ export function useFinePointer() {
 }
 
 // Gamas del concesionario. Cada una con su imagen real (fondo transparente).
-// `view`: 'top' = vista cenital (Mazda), 'side' = vista 3/4 frontal.
 export const GAMAS = [
   {
     id: 'baja',
@@ -34,8 +33,7 @@ export const GAMAS = [
     name: 'AXIS City',
     tagline: 'Agilidad urbana, eficiencia total.',
     accent: '#22D3EE',
-    img: CAR_IMG,
-    view: 'top',
+    img: '/marcas/renault.png',
     price: 'Desde $18.900',
     stats: { potencia: 120, velocidad: 190, consumo: 21 },
   },
@@ -45,8 +43,7 @@ export const GAMAS = [
     name: 'AXIS Vantage',
     tagline: 'El equilibrio entre confort y carácter.',
     accent: '#C9CED6',
-    img: '/porsche-mini.png',
-    view: 'side',
+    img: '/marcas/bmw.png',
     price: 'Desde $34.500',
     stats: { potencia: 250, velocidad: 240, consumo: 15 },
   },
@@ -56,8 +53,7 @@ export const GAMAS = [
     name: 'AXIS Sovereign',
     tagline: 'Ingeniería sin concesiones. Lujo absoluto.',
     accent: '#E7C98A',
-    img: '/mercedes-sunset.png',
-    view: 'side',
+    img: '/marcas/mercedes-sunset.png',
     price: 'Desde $92.000',
     stats: { potencia: 620, velocidad: 330, consumo: 11 },
   },
