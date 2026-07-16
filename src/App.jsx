@@ -4,7 +4,7 @@ import GamaCategorizer from './components/GamaCategorizer'
 import RoadJourney from './components/RoadJourney'
 import Showcase from './components/Showcase'
 import ColorStudio from './components/ColorStudio'
-import TestDrive from './components/TestDrive'
+import Contacto from './components/Contacto'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
         <RoadJourney />
         <Showcase />
         <ColorStudio />
-        <TestDrive />
+        <Contacto />
       </main>
       <Footer />
     </div>

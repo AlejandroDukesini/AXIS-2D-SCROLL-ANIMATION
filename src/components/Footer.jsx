@@ -1,4 +1,5 @@
 import { Gauge } from 'lucide-react'
+import { INSTAGRAM_URL, waLink } from '../lib/shared'
 
 export default function Footer() {
   return (
@@ -17,7 +18,22 @@ export default function Footer() {
         <div className="flex gap-6 text-sm text-chromeDim">
           <a href="#gamas" className="hover:text-chrome">Gamas</a>
           <a href="#modelos" className="hover:text-chrome">Modelos</a>
-          <a href="#testdrive" className="hover:text-chrome">Contacto</a>
+          <a
+            href={waLink('Hola, quiero información sobre AXIS Motors.')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-chrome"
+          >
+            WhatsApp
+          </a>
+          <a
+            href={INSTAGRAM_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-chrome"
+          >
+            Instagram
+          </a>
         </div>
       </div>
     </footer>

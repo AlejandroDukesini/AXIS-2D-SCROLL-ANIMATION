@@ -3,6 +3,29 @@ import { useEffect, useState } from 'react'
 // Ruta de la imagen protagonista (servida desde /public)
 export const CAR_IMG = '/scroll-img/mazda-remove-bk.png'
 
+// ---------------------------------------------------------------------------
+// DATOS DEL NEGOCIO — reemplazar por los reales antes de publicar.
+// ---------------------------------------------------------------------------
+export const BUSINESS = {
+  // Formato internacional, solo dígitos: 57 = Colombia.
+  whatsapp: '573000000000',
+  instagram: 'axismotors',
+  representante: {
+    nombre: 'Nombre del Representante',
+    cargo: 'Representante Legal · AXIS Motors',
+    // Colocar la foto en public/equipo/representante.jpg
+    foto: '/equipo/representante.jpg',
+  },
+}
+
+export const INSTAGRAM_URL = `https://instagram.com/${BUSINESS.instagram}`
+
+/** Enlace de WhatsApp con mensaje previo según el contexto del botón. */
+export function waLink(mensaje) {
+  const url = `https://wa.me/${BUSINESS.whatsapp}`
+  return mensaje ? `${url}?text=${encodeURIComponent(mensaje)}` : url
+}
+
 /**
  * Devuelve true solo si el dispositivo tiene un puntero fino (mouse/trackpad)
  * y el usuario no pidió movimiento reducido. Se usa para desactivar los

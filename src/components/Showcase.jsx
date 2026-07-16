@@ -8,7 +8,7 @@ import {
   animate,
 } from 'framer-motion'
 import { Gauge, Zap, Tag } from 'lucide-react'
-import { GAMAS } from '../lib/shared'
+import { GAMAS, waLink } from '../lib/shared'
 
 // Modelos de la galería (una imagen real por gama)
 const MODELS = GAMAS.map((g) => ({
@@ -142,10 +142,12 @@ function EndCard() {
         ¿Listo?
       </p>
       <a
-        href="#testdrive"
+        href={waLink('Hola, vi los modelos en la web y quiero ver el catálogo completo.')}
+        target="_blank"
+        rel="noopener noreferrer"
         className="rounded-full border border-electric/40 bg-electric/10 px-6 py-3 text-sm font-medium text-electric shadow-neon transition-transform hover:scale-105"
       >
-        Agenda tu Test Drive
+        Pide el catálogo por WhatsApp
       </a>
     </article>
   )

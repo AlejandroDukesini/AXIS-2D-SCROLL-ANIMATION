@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion'
-import { Gauge } from 'lucide-react'
+import { Gauge, MessageCircle } from 'lucide-react'
+import { waLink } from '../lib/shared'
 
 const links = [
   { label: 'Gamas', href: '#gamas' },
   { label: 'La Ruta', href: '#ruta' },
   { label: 'Modelos', href: '#modelos' },
   { label: 'Color Studio', href: '#color' },
-  { label: 'Test Drive', href: '#testdrive' },
+  { label: 'Contacto', href: '#contacto' },
 ]
 
 export default function Nav() {
@@ -37,10 +38,13 @@ export default function Nav() {
           ))}
         </nav>
         <a
-          href="#testdrive"
-          className="rounded-full border border-electric/40 bg-electric/10 px-5 py-2 text-sm font-medium text-electric shadow-neon transition-transform hover:scale-105"
+          href={waLink('Hola, quiero información sobre los autos de AXIS Motors.')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border border-electric/40 bg-electric/10 px-5 py-2 text-sm font-medium text-electric shadow-neon transition-transform hover:scale-105"
         >
-          Reservar
+          <MessageCircle className="h-4 w-4" />
+          Escríbenos
         </a>
       </div>
     </motion.header>
