@@ -84,6 +84,8 @@ export default function Hero() {
       <motion.img
         src={CAR_IMG}
         alt="Mazda AXIS Sovereign — vista cenital"
+        fetchpriority="high"
+        decoding="async"
         style={{ x: carX, y: carY, rotate: carRot }}
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}

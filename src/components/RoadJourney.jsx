@@ -122,6 +122,8 @@ export default function RoadJourney() {
         <motion.img
           src={CAR_IMG}
           alt="Mazda recorriendo la ruta"
+          loading="lazy"
+          decoding="async"
           style={{ y: carY, x: carX, rotate: carRot }}
           className="absolute left-1/2 top-0 z-20 w-[min(40vw,250px)] -translate-x-1/2 drop-shadow-[0_35px_45px_rgba(0,0,0,0.75)]"
         />

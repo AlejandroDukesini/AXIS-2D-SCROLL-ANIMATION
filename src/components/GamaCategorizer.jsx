@@ -61,6 +61,8 @@ export default function GamaCategorizer() {
               <motion.img
                 src={g.img}
                 alt={g.name}
+                loading="lazy"
+                decoding="async"
                 animate={{
                   scale: isActive ? 1.12 : 0.94,
                   y: isActive ? -8 : 0,

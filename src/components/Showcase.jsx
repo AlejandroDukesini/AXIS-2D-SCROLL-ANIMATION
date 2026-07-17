@@ -72,6 +72,8 @@ function ModelCard({ model }) {
       <motion.img
         src={model.img}
         alt={model.name}
+        loading="lazy"
+        decoding="async"
         initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
         animate={
           inView

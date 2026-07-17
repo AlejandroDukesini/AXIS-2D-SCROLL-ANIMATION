@@ -1,11 +1,16 @@
+import { lazy, Suspense } from 'react'
 import Nav from './components/Nav'
 import Hero from './components/Hero'
-import GamaCategorizer from './components/GamaCategorizer'
-import RoadJourney from './components/RoadJourney'
-import Showcase from './components/Showcase'
-import ColorStudio from './components/ColorStudio'
-import Contacto from './components/Contacto'
-import Footer from './components/Footer'
+
+// Secciones bajo el fold: se cargan de forma diferida (code-splitting).
+// El Hero y la Nav entran en el bundle inicial porque son lo primero visible;
+// el resto se descarga en chunks separados mientras el usuario ve el Hero.
+const GamaCategorizer = lazy(() => import('./components/GamaCategorizer'))
+const RoadJourney = lazy(() => import('./components/RoadJourney'))
+const Showcase = lazy(() => import('./components/Showcase'))
+const ColorStudio = lazy(() => import('./components/ColorStudio'))
+const Contacto = lazy(() => import('./components/Contacto'))
+const Footer = lazy(() => import('./components/Footer'))
 
 export default function App() {
   return (
@@ -16,13 +21,17 @@ export default function App() {
       <Nav />
       <main>
         <Hero />
-        <GamaCategorizer />
-        <RoadJourney />
-        <Showcase />
-        <ColorStudio />
-        <Contacto />
+        <Suspense fallback={null}>
+          <GamaCategorizer />
+          <RoadJourney />
+          <Showcase />
+          <ColorStudio />
+          <Contacto />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   )
 }

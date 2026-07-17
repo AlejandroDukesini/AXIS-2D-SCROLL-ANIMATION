@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // Ruta de la imagen protagonista (servida desde /public)
-export const CAR_IMG = '/scroll-img/mazda-remove-bk.png'
+export const CAR_IMG = '/scroll-img/mazda-remove-bk.webp'
 
 // ---------------------------------------------------------------------------
 // DATOS DEL NEGOCIO — reemplazar por los reales antes de publicar.
@@ -56,7 +56,7 @@ export const GAMAS = [
     name: 'AXIS City',
     tagline: 'Agilidad urbana, eficiencia total.',
     accent: '#22D3EE',
-    img: '/marcas/renault.png',
+    img: '/marcas/renault.webp',
     price: 'Desde $18.900',
     stats: { potencia: 120, velocidad: 190, consumo: 21 },
   },
@@ -66,7 +66,7 @@ export const GAMAS = [
     name: 'AXIS Vantage',
     tagline: 'El equilibrio entre confort y carácter.',
     accent: '#C9CED6',
-    img: '/marcas/bmw.png',
+    img: '/marcas/bmw.webp',
     price: 'Desde $34.500',
     stats: { potencia: 250, velocidad: 240, consumo: 15 },
   },
@@ -76,7 +76,7 @@ export const GAMAS = [
     name: 'AXIS Sovereign',
     tagline: 'Ingeniería sin concesiones. Lujo absoluto.',
     accent: '#E7C98A',
-    img: '/marcas/mercedes-sunset.png',
+    img: '/marcas/mercedes-sunset.webp',
     price: 'Desde $92.000',
     stats: { potencia: 620, velocidad: 330, consumo: 11 },
   },
