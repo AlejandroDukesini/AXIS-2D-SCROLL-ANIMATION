@@ -15,7 +15,7 @@ El objetivo del proyecto es demostrar que una interfaz altamente animada e inter
 | Capa | Tecnología |
 |------|------------|
 | UI / Framework | React 18 |
-| Build tool | Vite 5 |
+| Build tool | Vite 7 |
 | Animación | Framer Motion 11 (scroll-driven, springs, parallax) |
 | Estilos | Tailwind CSS 3 |
 | Iconografía | lucide-react |
@@ -129,8 +129,11 @@ solo ~12 KB, no ~300 KB.
    bundles cacheables independientes → mejor cacheo y descarga en paralelo.
 4. **Priorización de la LCP.** `preload` + `fetchpriority="high"` sobre la imagen del Hero;
    `loading="lazy"` + `decoding="async"` en las imágenes bajo el fold.
-5. **Fuentes no bloqueantes.** Google Fonts cargado con el patrón `preload` + swap `onload`
-   (con fallback `<noscript>`), evitando el render-blocking del `<head>`.
+5. **Fuentes no bloqueantes.** Google Fonts cargado con el patrón `preload` + cambio a
+   `rel="stylesheet"` desde el bundle (con fallback `<noscript>`), evitando el
+   render-blocking del `<head>`. El cambio se hace en `src/main.jsx` en lugar de con un
+   `onload=` en línea para no tener que abrir la CSP con `'unsafe-inline'`; la descarga
+   sigue arrancando en el `<head>`, así que el efecto sobre FCP/LCP es el mismo.
 6. **Higiene de assets y SEO.** Eliminación de asset muerto (−236 KB) y `robots.txt`
    válido → SEO **92 → 100**.
 7. **Respeto de accesibilidad.** Los efectos de cursor se desactivan en táctil y con

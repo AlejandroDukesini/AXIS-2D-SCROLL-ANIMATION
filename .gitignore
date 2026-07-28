@@ -4,3 +4,23 @@ dist
 *.local
 .DS_Store
 .lighthouse
+
+# Secretos: la app es estática y hoy no usa variables de entorno, pero cualquier
+# .env que se añada acabaría inlineado en el bundle público. Se ignora de forma
+# preventiva para que un secreto nunca llegue al historial de git (un commit
+# filtrado no se "arregla" borrándolo después: hay que rotar la credencial).
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Configuración local de herramientas de IA (puede incluir rutas y permisos
+# propios de la máquina del desarrollador).
+.claude/settings.local.json
+
+# Informe de auditoría de seguridad: describe la superficie de ataque y los
+# riesgos residuales del proyecto. No debe publicarse en un repositorio.
+cibersegurity.txt

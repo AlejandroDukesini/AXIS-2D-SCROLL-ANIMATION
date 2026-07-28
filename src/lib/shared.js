@@ -18,10 +18,45 @@ export const BUSINESS = {
   },
 }
 
-export const INSTAGRAM_URL = `https://instagram.com/${BUSINESS.instagram}`
+// ---------------------------------------------------------------------------
+// VALIDACIÓN DE LA CONFIGURACIÓN (frontera de confianza)
+// ---------------------------------------------------------------------------
+// Los valores de BUSINESS se interpolan dentro de URLs que van a `href`. Si un
+// día alguien pega ahí un valor con `/`, `?`, `#`, `@` o `..` (un copy-paste de
+// un enlace completo, un CMS, una variable de entorno), la URL resultante deja
+// de apuntar a wa.me / instagram.com y el botón se convierte en un redirect
+// abierto hacia el sitio del atacante — con la credibilidad de esta marca
+// detrás (phishing). Validar aquí, en el único punto donde se construyen las
+// URLs, hace que eso sea imposible por construcción y no por disciplina.
+//
+// Ante un valor inválido se devuelve '#' (enlace inerte) en lugar de navegar a
+// un destino inesperado: fallar cerrado es preferible a fallar hacia fuera.
+const RE_TELEFONO = /^[0-9]{8,15}$/ // E.164 sin '+', solo dígitos
+const RE_INSTAGRAM = /^[A-Za-z0-9._]{1,30}$/ // reglas de handle de Instagram
+
+const LINK_INERTE = '#'
+
+function avisar(campo, valor) {
+  // En producción Vite elimina esta rama por completo (import.meta.env.DEV es
+  // una constante en build), así que no filtra configuración al usuario final.
+  if (import.meta.env.DEV) {
+    console.warn(
+      `[shared] BUSINESS.${campo} no es válido (${JSON.stringify(valor)}); ` +
+        'el enlace queda inerte para no redirigir a un destino no previsto.',
+    )
+  }
+}
+
+export const INSTAGRAM_URL = RE_INSTAGRAM.test(BUSINESS.instagram)
+  ? `https://instagram.com/${BUSINESS.instagram}`
+  : (avisar('instagram', BUSINESS.instagram), LINK_INERTE)
 
 /** Enlace de WhatsApp con mensaje previo según el contexto del botón. */
 export function waLink(mensaje) {
+  if (!RE_TELEFONO.test(BUSINESS.whatsapp)) {
+    avisar('whatsapp', BUSINESS.whatsapp)
+    return LINK_INERTE
+  }
   const url = `https://wa.me/${BUSINESS.whatsapp}`
   return mensaje ? `${url}?text=${encodeURIComponent(mensaje)}` : url
 }

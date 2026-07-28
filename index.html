@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/webp" href="/scroll-img/mazda-remove-bk.webp" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      No filtrar la URL completa a terceros (Google Fonts) al pedir subrecursos:
+      solo se envía el origen, y nada si el destino baja a HTTP.
+      La Content-Security-Policy se inyecta aquí en el build de producción
+      (ver plugin `cspMeta` en vite.config.js); no se pone en el fuente porque
+      el servidor de desarrollo de Vite necesita inyectar <style> en caliente.
+    -->
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       name="description"
       content="Concesionario premium multi-gama — experiencia interactiva scroll-driven."
@@ -18,14 +26,22 @@
       fetchpriority="high"
     />
 
-    <!-- Fuentes display: carga asíncrona para no bloquear el render (FCP) -->
+    <!--
+      Fuentes display: carga asíncrona para no bloquear el render (FCP).
+      El `preload` arranca la descarga al parsear el <head>; el cambio a
+      `rel="stylesheet"` lo hace main.jsx (ver `activarFuentes`). Antes se hacía
+      con un manejador `onload=` en línea, que obligaba a abrir la CSP con
+      'unsafe-inline'/'unsafe-hashes' en script-src — es decir, a permitir la
+      ejecución de scripts en línea, que es justo el vector principal de XSS.
+      Moverlo al bundle mantiene la misma precarga y permite un script-src estricto.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      id="font-css"
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600&display=swap"
-      onload="this.onload=null;this.rel='stylesheet'"
     />
     <noscript>
       <link

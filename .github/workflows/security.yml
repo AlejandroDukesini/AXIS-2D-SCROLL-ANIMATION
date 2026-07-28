@@ -1,0 +1,82 @@
+# Puerta de seguridad en CI (DevSecOps).
+#
+# El riesgo real de este proyecto no está en su código —es una landing estática
+# sin backend ni entrada de usuario— sino en su cadena de suministro: 200+
+# paquetes transitivos de los que depende el build. Un aviso nuevo en cualquiera
+# de ellos aparece sin que nadie toque el repositorio, así que la comprobación
+# se ejecuta también de forma programada, no solo en los push.
+name: security
+
+on:
+  push:
+    branches: [Principal]
+  pull_request:
+  schedule:
+    # Lunes 06:00 UTC: detecta avisos publicados sobre dependencias que no
+    # cambiaron. Sin esto, un repo inactivo se degrada en silencio.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+# Mínimo privilegio: el token de CI solo necesita leer el código.
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Auditoría de dependencias y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` respeta package-lock.json exactamente: instala las versiones
+      # y hashes fijados, no "lo último que satisfaga el rango". Es lo que hace
+      # reproducible el build y lo que impide que una versión nueva y maliciosa
+      # entre sola.
+      - name: Instalar dependencias fijadas al lockfile
+        run: npm ci
+
+      # Falla el pipeline ante vulnerabilidades altas o críticas. Las moderadas
+      # se reportan pero no bloquean, para no paralizar el trabajo por avisos
+      # que solo afectan al entorno de desarrollo.
+      - name: Auditar vulnerabilidades (bloquea en high/critical)
+        run: npm audit --audit-level=high
+
+      - name: Informe completo de avisos (no bloqueante)
+        if: always()
+        run: npm audit || true
+
+      # El build debe seguir funcionando: valida de paso que los plugins de
+      # seguridad de vite.config.js (CSP + cabeceras) no se han roto.
+      - name: Build de producción
+        run: npm run build
+
+      # Comprobación de regresión: si alguien quita el plugin de cabeceras o
+      # relaja la CSP hacia 'unsafe-inline'/'unsafe-eval', CI lo detiene aquí.
+      - name: Verificar que el build emite las protecciones esperadas
+        run: |
+          set -euo pipefail
+          test -f dist/_headers || { echo "::error::falta dist/_headers"; exit 1; }
+          for h in Content-Security-Policy Strict-Transport-Security \
+                   X-Content-Type-Options X-Frame-Options Referrer-Policy \
+                   Permissions-Policy; do
+            grep -q "$h" dist/_headers || { echo "::error::falta cabecera $h"; exit 1; }
+          done
+          grep -q "Content-Security-Policy" dist/index.html \
+            || { echo "::error::falta el <meta> CSP en dist/index.html"; exit 1; }
+          # Solo se inspeccionan las líneas que declaran la política: index.html
+          # contiene comentarios que nombran 'unsafe-inline' para explicar por qué
+          # NO se usa, y buscar en todo el fichero daría un falso positivo.
+          if grep -h "Content-Security-Policy" dist/index.html dist/_headers \
+               | grep -Eq "unsafe-inline|unsafe-eval|unsafe-hashes"; then
+            echo "::error::la CSP se ha relajado con una directiva 'unsafe-*'"
+            exit 1
+          fi
+          echo "OK: CSP estricta y cabeceras de seguridad presentes."
