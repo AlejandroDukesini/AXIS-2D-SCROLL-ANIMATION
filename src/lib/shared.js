@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { PERF_LITE } from './device'
 
 // Ruta de la imagen protagonista (servida desde /public)
 export const CAR_IMG = '/scroll-img/mazda-remove-bk.webp'
@@ -13,8 +14,9 @@ export const BUSINESS = {
   representante: {
     nombre: 'Nombre del Representante',
     cargo: 'Representante Legal · AXIS Motors',
-    // Colocar la foto en public/equipo/representante.jpg
-    foto: '/equipo/representante.jpg',
+    // Ruta de la foto (p. ej. '/equipo/representante.jpg' en public/). Mientras
+    // sea null se muestran las iniciales, sin pedir un archivo inexistente (404).
+    foto: null,
   },
 }
 
@@ -71,7 +73,9 @@ export function useFinePointer() {
   useEffect(() => {
     const mq = window.matchMedia('(pointer: fine)')
     const rm = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const update = () => setFine(mq.matches && !rm.matches)
+    // En dispositivos de baja capacidad tampoco: el parallax de cursor es puro
+    // adorno y cuesta trabajo de estilo/composición en cada mousemove.
+    const update = () => setFine(mq.matches && !rm.matches && !PERF_LITE)
     update()
     mq.addEventListener('change', update)
     rm.addEventListener('change', update)
@@ -83,37 +87,38 @@ export function useFinePointer() {
   return fine
 }
 
-// Gamas del concesionario. Cada una con su imagen real (fondo transparente).
+// Gamas del concesionario. `id` enlaza con CATEGORIES del inventario; las
+// cifras (nº de vehículos, precio desde, potencia máx.) se DERIVAN del
+// inventario en categoryStats(), nunca se escriben a mano.
+// `img` es la foto de ambiente de la gama (clave del image-manifest) y su
+// `imgAlt` describe lo que realmente aparece en la foto.
 export const GAMAS = [
   {
-    id: 'baja',
-    tier: 'Gama Baja',
+    id: 'economico',
+    tier: 'Gama Económica',
     name: 'AXIS City',
-    tagline: 'Agilidad urbana, eficiencia total.',
+    tagline: 'Agilidad urbana, consumo bajo y mantenimiento sencillo.',
     accent: '#22D3EE',
-    img: '/marcas/renault.webp',
-    price: 'Desde $18.900',
-    stats: { potencia: 120, velocidad: 190, consumo: 21 },
+    img: 'marcas/volkswagen-taigo',
+    imgAlt: 'SUV compacto Volkswagen azul, vista frontal',
   },
   {
     id: 'media',
-    tier: 'Gama Media',
+    tier: 'Gama Media · Premium',
     name: 'AXIS Vantage',
-    tagline: 'El equilibrio entre confort y carácter.',
+    tagline: 'El equilibrio entre confort, equipamiento y carácter.',
     accent: '#C9CED6',
-    img: '/marcas/bmw.webp',
-    price: 'Desde $34.500',
-    stats: { potencia: 250, velocidad: 240, consumo: 15 },
+    img: 'marcas/bmw-serie-2-coupe',
+    imgAlt: 'BMW Serie 2 Coupé plateado, vista frontal',
   },
   {
-    id: 'alta',
-    tier: 'Gama Alta',
+    id: 'lujo',
+    tier: 'Lujo · Alto rendimiento',
     name: 'AXIS Sovereign',
-    tagline: 'Ingeniería sin concesiones. Lujo absoluto.',
+    tagline: 'Ingeniería sin concesiones. Lujo y prestaciones absolutas.',
     accent: '#E7C98A',
-    img: '/marcas/mercedes-sunset.webp',
-    price: 'Desde $92.000',
-    stats: { potencia: 620, velocidad: 330, consumo: 11 },
+    img: 'marcas/mercedes-amg-a45',
+    imgAlt: 'Mercedes-AMG A 45 negro, vista tres cuartos',
   },
 ]
 

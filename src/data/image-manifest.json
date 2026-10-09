@@ -1,0 +1,25 @@
+{
+  "marcas/bmw-serie-2-coupe": {
+    "width": 407,
+    "height": 271,
+    "widths": [
+      320,
+      407
+    ]
+  },
+  "marcas/mercedes-amg-a45": {
+    "width": 324,
+    "height": 188,
+    "widths": [
+      324
+    ]
+  },
+  "marcas/volkswagen-taigo": {
+    "width": 422,
+    "height": 328,
+    "widths": [
+      320,
+      422
+    ]
+  }
+}

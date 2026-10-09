@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
+import { applyPerfTier } from './lib/device'
 import './index.css'
 
 /**
@@ -21,6 +22,9 @@ function activarFuentes() {
   if (link && link.rel !== 'stylesheet') link.rel = 'stylesheet'
 }
 activarFuentes()
+
+// Antes del primer render, para que el CSS ya conozca la capacidad del equipo.
+applyPerfTier()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

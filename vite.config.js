@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VEHICLES, CATEGORY_BY_ID } from './src/data/vehicles.js'
 
 // ---------------------------------------------------------------------------
 // POLÍTICA DE SEGURIDAD DE CONTENIDO (CSP)
@@ -122,9 +123,87 @@ function securityHeadersFile() {
   }
 }
 
+/**
+ * Datos estructurados (schema.org) generados desde el inventario en build y
+ * en dev: AutoDealer + ItemList de Car con su Offer. Al estar en el HTML
+ * estático, los buscadores los leen sin ejecutar JavaScript.
+ *
+ * CSP: un <script type="application/ld+json"> es un bloque de datos, no
+ * script ejecutable, así que no requiere abrir script-src.
+ */
+function vehicleStructuredData() {
+  const itemCondition = (v) =>
+    v.condition === 'Nuevo' ? 'https://schema.org/NewCondition' : 'https://schema.org/UsedCondition'
+  const graph = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'AutoDealer',
+        '@id': '#dealer',
+        name: 'AXIS Motors',
+        description: 'Concesionario de vehículos nuevos y usados: gama económica, media/premium y lujo.',
+        currenciesAccepted: 'USD',
+        areaServed: 'CO',
+      },
+      {
+        '@type': 'ItemList',
+        name: 'Inventario AXIS Motors',
+        numberOfItems: VEHICLES.length,
+        itemListElement: VEHICLES.map((v, i) => ({
+          '@type': 'ListItem',
+          position: i + 1,
+          item: {
+            '@type': 'Car',
+            '@id': `#vehiculo/${v.slug}`,
+            url: `#vehiculo/${v.slug}`,
+            name: `${v.brand} ${v.model} ${v.trim} ${v.year}`,
+            brand: { '@type': 'Brand', name: v.brand },
+            model: v.model,
+            vehicleModelDate: String(v.year),
+            bodyType: v.body,
+            color: v.color.name,
+            fuelType: v.fuel,
+            vehicleTransmission: v.transmission,
+            driveWheelConfiguration: v.drivetrain,
+            vehicleEngine: { '@type': 'EngineSpecification', name: v.engine, enginePower: { '@type': 'QuantitativeValue', value: v.power, unitCode: 'BHP' } },
+            mileageFromOdometer: { '@type': 'QuantitativeValue', value: v.mileage, unitCode: 'KMT' },
+            itemCondition: itemCondition(v),
+            category: CATEGORY_BY_ID[v.category].label,
+            offers: {
+              '@type': 'Offer',
+              price: v.price,
+              priceCurrency: 'USD',
+              availability: 'https://schema.org/InStock',
+              itemCondition: itemCondition(v),
+              seller: { '@id': '#dealer' },
+            },
+          },
+        })),
+      },
+    ],
+  }
+  return {
+    name: 'vehicle-structured-data',
+    transformIndexHtml(html) {
+      return {
+        html: html.replaceAll('%VEHICLE_COUNT%', String(VEHICLES.length)),
+        tags: [
+          {
+            tag: 'script',
+            attrs: { type: 'application/ld+json' },
+            // "<" escapado: un texto de datos nunca puede cerrar el <script>.
+            children: JSON.stringify(graph).replace(/</g, '\\u003c'),
+            injectTo: 'head',
+          },
+        ],
+      }
+    },
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), cspMeta(), securityHeadersFile()],
+  plugins: [react(), cspMeta(), securityHeadersFile(), vehicleStructuredData()],
   server: {
     open: true,
     // Escuchar solo en loopback: el servidor de desarrollo no debe quedar
@@ -152,14 +231,16 @@ export default defineConfig({
     // Sin sourcemaps en producción: evita publicar el código fuente original y
     // los nombres internos, que facilitan el reconocimiento a un atacante.
     sourcemap: false,
-    // Separa las dependencias grandes en chunks propios: mejoran el cacheo
-    // entre deploys (el vendor no cambia aunque cambie el código de la app)
-    // y permiten descargar React y el motor de animación en paralelo.
+    // React va en un chunk propio: mejor cacheo entre deploys (el vendor no
+    // cambia aunque cambie el código de la app).
+    // Framer Motion NO se agrupa a mano: forzarlo en un único chunk metía el
+    // motor completo de animación/gestos en la carga inicial y anulaba el
+    // LazyMotion de App.jsx. Sin la regla, Rollup deja en el bundle inicial
+    // solo `m` + hooks y manda domMax al chunk diferido motionFeatures.
     rollupOptions: {
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom'],
-          'motion-vendor': ['framer-motion'],
         },
       },
     },

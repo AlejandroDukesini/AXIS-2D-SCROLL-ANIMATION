@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { m } from 'framer-motion'
 import { ArrowUpRight, BadgeCheck } from 'lucide-react'
 import { BUSINESS, INSTAGRAM_URL, waLink } from '../lib/shared'
 
@@ -8,13 +8,13 @@ const MSG =
 
 export default function Contacto() {
   return (
-    <section id="contacto" className="relative overflow-hidden py-28">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(231,201,138,0.08),transparent_55%)]" />
+    <section id="contacto" className="section-anchor relative overflow-hidden py-24 md:py-28" aria-labelledby="contacto-title">
+      <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(231,201,138,0.08),transparent_55%)]" />
 
-      <div className="relative mx-auto max-w-3xl px-6">
+      <div className="container-x relative max-w-3xl">
         <header className="text-center">
-          <span className="eyebrow">05 — Contacto</span>
-          <h2 className="mt-2 font-display text-4xl tracking-wide text-chrome md:text-5xl">
+          <span className="eyebrow">06 — Contacto</span>
+          <h2 id="contacto-title" className="section-title mt-2">
             Hablemos directamente
           </h2>
           <p className="mx-auto mt-3 max-w-md text-chromeDim">
@@ -60,7 +60,7 @@ function Representante() {
     .join('')
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.5 }}
@@ -69,22 +69,26 @@ function Representante() {
     >
       <div className="relative">
         {/* Halo champán detrás del retrato */}
-        <div className="absolute -inset-6 rounded-full bg-[radial-gradient(circle,rgba(231,201,138,0.22),transparent_70%)] blur-xl" />
+        <div aria-hidden="true" className="absolute -inset-10 rounded-full bg-[radial-gradient(closest-side,rgba(231,201,138,0.22),transparent)]" />
         <div className="relative h-32 w-32 rounded-full bg-gradient-to-br from-champagne via-champagneDeep to-champagne p-[2px] shadow-gold md:h-36 md:w-36">
-          {failed ? (
-            <div className="grid h-full w-full place-items-center rounded-full bg-panel2 font-display text-4xl tracking-wide text-champagne">
+          {failed || !foto ? (
+            <div aria-hidden="true" className="grid h-full w-full place-items-center rounded-full bg-panel2 font-display text-4xl tracking-wide text-champagne">
               {iniciales}
             </div>
           ) : (
             <img
               src={foto}
               alt={nombre}
+              width={144}
+              height={144}
+              loading="lazy"
+              decoding="async"
               onError={() => setFailed(true)}
               className="h-full w-full rounded-full object-cover"
             />
           )}
         </div>
-        <span className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-full border-2 border-obsidian bg-electric text-obsidian">
+        <span aria-hidden="true" className="absolute bottom-1 right-1 grid h-8 w-8 place-items-center rounded-full border-2 border-obsidian bg-electric text-obsidian">
           <BadgeCheck className="h-4 w-4" />
         </span>
       </div>
@@ -93,14 +97,14 @@ function Representante() {
         {nombre}
       </p>
       <p className="mt-1 text-sm text-chromeDim">{cargo}</p>
-    </motion.div>
+    </m.div>
   )
 }
 
 /** Tarjeta de canal: el color e icono de marca la identifican de un vistazo. */
 function ContactCard({ href, label, desc, icon, accent, glow, iconBg }) {
   return (
-    <motion.a
+    <m.a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -139,7 +143,7 @@ function ContactCard({ href, label, desc, icon, accent, glow, iconBg }) {
         </span>
         <ArrowUpRight className="ml-auto h-5 w-5 shrink-0 text-chromeDim transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-chrome" />
       </div>
-    </motion.a>
+    </m.a>
   )
 }
 

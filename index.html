@@ -14,11 +14,22 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta
       name="description"
-      content="Concesionario premium multi-gama — experiencia interactiva scroll-driven."
+      content="AXIS Motors: vehículos nuevos y usados en gama económica, media y de lujo. Toyota, Mazda, BMW, Audi, Mercedes-Benz, Porsche y más, con precios claros y atención por WhatsApp."
     />
-    <title>AXIS Motors — Concesionario Premium</title>
+    <meta name="theme-color" content="#0B0C10" />
+    <meta name="color-scheme" content="dark" />
+    <title>AXIS Motors — Vehículos nuevos y usados | Concesionario premium</title>
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:site_name" content="AXIS Motors" />
+    <meta property="og:title" content="AXIS Motors — Vehículos nuevos y usados" />
+    <meta
+      property="og:description"
+      content="Inventario de %VEHICLE_COUNT% vehículos en tres gamas: económica, media/premium y lujo. Filtra, compara y consulta por WhatsApp."
+    />
+    <meta name="twitter:card" content="summary" />
 
-    <!-- Precarga de la imagen LCP (auto protagonista del Hero) -->
+    <!-- Precarga de la imagen del Hero (candidata a LCP) -->
     <link
       rel="preload"
       as="image"
@@ -41,17 +52,23 @@
       id="font-css"
       rel="preload"
       as="style"
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap"
     />
     <noscript>
       <link
-        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Oswald:wght@300;400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet"
       />
     </noscript>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: system-ui; color: #c9ced6">
+        AXIS Motors — concesionario de vehículos nuevos y usados. Activa JavaScript para ver el
+        inventario o escríbenos por WhatsApp.
+      </p>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

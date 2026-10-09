@@ -3,6 +3,12 @@ export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
+      screens: {
+        xs: '360px',
+        '3xl': '1920px',
+        // Tablet/desktop con altura suficiente para elementos secundarios del Hero
+        tall: { raw: '(min-width: 768px) and (min-height: 860px)' },
+      },
       colors: {
         // Paleta premium
         obsidian: '#0B0C10', // negro obsidiana (fondo principal)
@@ -16,7 +22,7 @@ export default {
         electricDeep: '#0891B2',
       },
       fontFamily: {
-        display: ['"Bebas Neue"', 'Oswald', 'Impact', 'sans-serif'],
+        display: ['"Bebas Neue"', 'Impact', 'Arial Narrow', 'sans-serif'],
         body: ['Inter', 'system-ui', 'sans-serif'],
       },
       letterSpacing: {

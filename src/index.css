@@ -2,12 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===========================================================================
+   DESIGN TOKENS
+   Los colores de marca viven en tailwind.config.js (obsidian, chrome,
+   electric, champagne…); aquí, lo que el CSS de componentes necesita como
+   variables: medidas, radios, curvas y duraciones.
+   ======================================================================== */
 :root {
   color-scheme: dark;
+  --nav-h: 4rem;
+  --radius-card: 1.5rem;
+  --radius-field: 0.875rem;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-1: 160ms; /* feedback inmediato (press, focus) */
+  --dur-2: 280ms; /* hover, entrada de elementos pequeños */
+  --dur-3: 600ms; /* entradas de sección */
+  --surface-0: #0b0c10;
+  --surface-1: #101218;
+  --surface-2: #15171f;
+  --line: rgba(255, 255, 255, 0.08);
 }
 
 html {
   scroll-behavior: smooth;
+  /* Evita el salto horizontal del layout al bloquear el scroll con un diálogo */
+  scrollbar-gutter: stable;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+/* Pantallas 2K / 4K: la escala rem crece un poco para no ver la UI diminuta */
+@media (min-width: 1920px) {
+  html { font-size: 17px; }
+}
+@media (min-width: 2560px) {
+  html { font-size: 19px; }
 }
 
 * {
@@ -17,6 +45,21 @@ html {
 body {
   @apply bg-obsidian text-chrome font-body antialiased;
   overflow-x: hidden;
+}
+@supports (overflow-x: clip) {
+  /* clip no crea contenedor de scroll: no interfiere con position: sticky */
+  body { overflow-x: clip; }
+}
+
+/* Bloqueo de scroll mientras hay un diálogo modal abierto */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+/* Foco visible y consistente para teclado (no se muestra con ratón/táctil) */
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 3px;
 }
 
 /* Scrollbar minimalista */
@@ -45,37 +88,391 @@ body {
     @apply inline-flex items-center gap-2 text-xs uppercase tracking-mega text-electric/80;
   }
 
-  /* --- CARRETERA / ROAD --- */
+  /* ------------------------------------------------------------- layout */
+  .container-x {
+    width: 100%;
+    max-width: 92rem;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 4vw, 2.5rem);
+  }
+  @media (min-width: 1920px) {
+    .container-x { max-width: 108rem; }
+  }
+  .section-title {
+    @apply font-display tracking-wide text-chrome;
+    font-size: clamp(2.5rem, 1.7rem + 3.4vw, 4.5rem);
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+  .section-anchor {
+    scroll-margin-top: var(--nav-h);
+  }
+  .skip-link {
+    @apply fixed left-4 z-[100] rounded-full bg-electric px-5 py-3 text-sm font-medium text-obsidian;
+    top: -5rem;
+    transition: top var(--dur-1);
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  /* ------------------------------------------------------------ botones */
+  .btn-primary,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 text-sm font-medium;
+    min-height: 2.875rem;
+    transition:
+      transform var(--dur-1) var(--ease-out),
+      background-color var(--dur-2),
+      border-color var(--dur-2),
+      color var(--dur-2);
+    touch-action: manipulation;
+  }
+  .btn-primary {
+    @apply bg-electric text-obsidian;
+  }
+  .btn-ghost {
+    @apply border border-white/15 text-chrome;
+  }
+  .btn-primary:active,
+  .btn-ghost:active,
+  .icon-btn:active {
+    transform: scale(0.97);
+  }
+  .btn-primary:disabled,
+  .btn-ghost:disabled {
+    @apply cursor-not-allowed opacity-50;
+    transform: none;
+  }
+  @media (hover: hover) {
+    .btn-primary:not(:disabled):hover { background-color: #67e8f9; }
+    .btn-ghost:not(:disabled):hover { @apply border-white/30 bg-white/5; }
+  }
+  .icon-btn {
+    @apply inline-grid h-11 w-11 shrink-0 place-items-center rounded-full border border-white/10 text-chrome;
+    transition:
+      transform var(--dur-1) var(--ease-out),
+      background-color var(--dur-2),
+      color var(--dur-2),
+      border-color var(--dur-2);
+  }
+  @media (hover: hover) {
+    .icon-btn:hover { @apply border-white/25 bg-white/5; }
+    a.icon-btn[href*='wa.me']:hover { color: #25d366; border-color: #25d36680; }
+  }
+  .link-btn {
+    @apply inline-flex items-center gap-1 rounded text-sm text-chromeDim underline-offset-4;
+    min-height: 2rem;
+  }
+  .link-btn:hover {
+    @apply text-chrome underline;
+  }
+  .count-pill {
+    @apply grid h-5 min-w-5 place-items-center rounded-full bg-electric px-1.5 text-[11px] font-semibold text-obsidian;
+  }
+
+  /* ------------------------------------------------------- formularios */
+  .field {
+    @apply rounded-[var(--radius-field)] border border-white/10 bg-panel px-3 text-sm text-chrome;
+    min-height: 2.75rem;
+    transition: border-color var(--dur-2);
+  }
+  .field::placeholder {
+    @apply text-chromeDim;
+  }
+  .field:focus {
+    @apply border-electric/60;
+  }
+  .field:focus-visible {
+    outline-offset: 1px;
+  }
+  .range {
+    accent-color: #22d3ee;
+    height: 1.5rem;
+  }
+  .filter-legend {
+    @apply mb-3 text-[11px] uppercase tracking-[0.16em] text-chromeDim;
+  }
+  .chip-label {
+    @apply cursor-pointer;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full border border-white/10 px-3.5 text-sm text-chromeDim;
+    min-height: 2.25rem;
+    transition:
+      background-color var(--dur-2),
+      border-color var(--dur-2),
+      color var(--dur-2);
+  }
+  .chip-label:hover .chip {
+    @apply border-white/25 text-chrome;
+  }
+  .peer:checked + .chip {
+    @apply border-electric/60 bg-electric/15 text-electric;
+  }
+  .peer:focus-visible + .chip {
+    outline: 2px solid #22d3ee;
+    outline-offset: 2px;
+  }
+  .check-row {
+    @apply flex cursor-pointer items-center gap-2.5 rounded-lg px-1 text-sm text-chrome;
+    min-height: 2.25rem;
+  }
+  .check-row input {
+    accent-color: #22d3ee;
+    @apply h-4 w-4 shrink-0;
+  }
+
+  /* --------------------------------------------------------- inventario */
+  .inventory-toolbar {
+    @apply mt-10 flex flex-wrap items-center justify-between gap-3 py-3;
+    background: var(--surface-0);
+    /* Fondo a sangre completa sin elementos extra */
+    box-shadow: 0 0 0 100vmax var(--surface-0);
+    clip-path: inset(0 -100vmax);
+    z-index: 30;
+  }
+  @media (min-width: 768px) {
+    .inventory-toolbar {
+      position: sticky;
+      top: var(--nav-h);
+      border-bottom: 1px solid var(--line);
+    }
+  }
+  .segmented {
+    @apply flex w-full gap-1 overflow-x-auto rounded-full border border-white/10 bg-panel p-1 lg:w-auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+  .segmented-btn {
+    @apply inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm text-chromeDim;
+    flex: 1 0 auto;
+    min-height: 2.5rem;
+    transition:
+      background-color var(--dur-2),
+      color var(--dur-2);
+  }
+  .segmented-btn:hover {
+    @apply text-chrome;
+  }
+  .segmented-btn[aria-pressed='true'] {
+    @apply bg-chrome text-obsidian;
+  }
+  .segmented-count {
+    @apply ml-1.5 text-xs opacity-60;
+  }
+  .filters-aside {
+    position: sticky;
+    top: calc(var(--nav-h) + 5.5rem);
+    max-height: calc(100vh - var(--nav-h) - 7rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    @apply rounded-3xl border border-white/5 bg-panel/60 p-5;
+  }
+  /* Grilla basada en contenido: tantas columnas como quepan de ≥ 18rem */
+  .inventory-grid {
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  }
+
+  /* Escenario de imagen: mismo fondo de estudio para TODOS los vehículos */
+  .vehicle-stage {
+    background: #12141b;
+    background:
+      linear-gradient(180deg, transparent 68%, rgba(255, 255, 255, 0.035) 68%, transparent 100%),
+      radial-gradient(120% 85% at 50% 0%, color-mix(in srgb, var(--accent) 18%, #1b1e27) 0%, #12141b 58%, #0c0e13 100%);
+  }
+
+  .vehicle-card {
+    @apply relative flex w-full flex-col overflow-hidden border border-white/[0.06];
+    border-radius: var(--radius-card);
+    background: linear-gradient(180deg, #13151c, #0f1116);
+    transition:
+      transform var(--dur-2) var(--ease-out),
+      border-color var(--dur-2);
+    /* No se hace layout ni paint de las cards fuera de pantalla */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 34rem;
+    animation: card-in 0.45s var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 35ms);
+  }
+  .vehicle-card .vehicle-stage svg {
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .vehicle-card:hover {
+      transform: translateY(-4px);
+      border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+    }
+    .vehicle-card:hover .vehicle-stage svg {
+      transform: translateX(1.5%) scale(1.03);
+    }
+  }
+  .badge {
+    @apply inline-flex items-center rounded-full border border-white/10 px-2.5 py-1 text-[11px] font-medium text-chrome;
+    background: rgba(11, 12, 16, 0.78);
+  }
+  .badge-new {
+    @apply border-electric/40 text-electric;
+  }
+  .badge-used {
+    @apply text-chrome;
+  }
+  .badge-offer {
+    @apply border-champagne/50 text-champagne;
+  }
+  .compare-toggle {
+    @apply absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 text-chrome;
+    min-height: 2.5rem;
+    background: rgba(11, 12, 16, 0.78);
+    transition:
+      background-color var(--dur-2),
+      border-color var(--dur-2),
+      color var(--dur-2);
+  }
+  .compare-toggle[aria-pressed='true'] {
+    @apply border-electric bg-electric text-obsidian;
+  }
+  .compare-toggle:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+  .compare-tray {
+    @apply fixed left-1/2 z-[45] flex items-center gap-3 rounded-full border border-electric/30 py-2 pl-5 pr-2;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    width: min(34rem, calc(100% - 2rem));
+    transform: translateX(-50%);
+    background: rgba(21, 23, 31, 0.97);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9);
+    animation: tray-in var(--dur-2) var(--ease-out) both;
+  }
+  .compare-tray > p {
+    flex: 1;
+  }
+
+  .skeleton {
+    @apply rounded-xl;
+    background: linear-gradient(90deg, #13151b 0%, #1a1d25 50%, #13151b 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s linear infinite;
+  }
+
+  /* ---------------------------------------------------------- diálogos */
+  .ui-dialog {
+    @apply border border-white/10 p-0 text-chrome;
+    background: var(--surface-1);
+    max-width: none;
+    max-height: none;
+    overscroll-behavior: contain;
+  }
+  .ui-dialog[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .ui-dialog::backdrop {
+    background: rgba(4, 5, 7, 0.74);
+    animation: fade-in var(--dur-2) ease both;
+  }
+  .ui-dialog-box {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+  .ui-dialog-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Ficha: pantalla completa en móvil, centrada en ≥ sm */
+  .ui-dialog-center {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    animation: dialog-up var(--dur-2) var(--ease-out) both;
+  }
+  @media (min-width: 640px) {
+    .ui-dialog-center {
+      margin: auto;
+      width: min(66rem, calc(100% - 3rem));
+      height: auto;
+      max-height: min(92vh, 60rem);
+      border-radius: var(--radius-card);
+    }
+  }
+  /* Filtros: bottom sheet en móvil, panel lateral en ≥ md */
+  .ui-dialog-sheet {
+    margin: auto 0 0;
+    width: 100%;
+    max-height: 88vh;
+    max-height: 88dvh;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: dialog-up var(--dur-2) var(--ease-out) both;
+  }
+  @media (min-width: 768px) {
+    .ui-dialog-sheet {
+      margin: 0 0 0 auto;
+      width: 26rem;
+      height: 100%;
+      max-height: 100%;
+      border-radius: 0;
+      animation-name: dialog-left;
+    }
+  }
+  .ui-dialog-sheet .ui-dialog-body {
+    @apply px-5 py-6;
+  }
+
+  /* --------------------------------------------------------- navegación */
+  .site-nav {
+    transition:
+      background-color var(--dur-3),
+      border-color var(--dur-3);
+    border-bottom: 1px solid transparent;
+  }
+  .site-nav[data-solid='true'] {
+    background: rgba(11, 12, 16, 0.94);
+    border-color: var(--line);
+  }
+  /* Blur solo donde sale barato: equipos capaces con puntero fino */
+  @media (hover: hover) and (pointer: fine) and (min-width: 1024px) {
+    :root[data-perf='full'] .site-nav[data-solid='true'] {
+      background: rgba(11, 12, 16, 0.78);
+      -webkit-backdrop-filter: saturate(140%) blur(12px);
+      backdrop-filter: saturate(140%) blur(12px);
+    }
+  }
+
+  /* ---------------------------------------------------------- CARRETERA */
   .road-surface {
     background:
-      linear-gradient(90deg, transparent 0 8%, #0000 8%),
-      repeating-linear-gradient(
-        90deg,
-        #16181f 0 2px,
-        #14161d 2px 40px
-      ),
+      repeating-linear-gradient(90deg, #16181f 0 2px, #14161d 2px 40px),
       linear-gradient(180deg, #14161d, #0e1015);
     box-shadow:
       inset 0 0 60px rgba(0, 0, 0, 0.9),
       inset 0 0 0 2px rgba(255, 255, 255, 0.02);
   }
-  /* Línea central discontinua (se anima por scroll vía background-position) */
+  /* Línea central discontinua: se desplaza con transform (compositor) */
   .road-dashes {
-    background-image: linear-gradient(
-      to bottom,
-      #e7c98a 0 60px,
-      transparent 60px 160px
-    );
+    background-image: linear-gradient(to bottom, #e7c98a 0 60px, transparent 60px 160px);
     background-size: 100% 160px;
     background-repeat: repeat-y;
   }
   .road-edge {
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(201, 206, 214, 0.55),
-      transparent
-    );
+    background: linear-gradient(to right, transparent, rgba(201, 206, 214, 0.55), transparent);
+  }
+
+  /* Sombra de suelo barata (gradiente) en lugar de filter: drop-shadow */
+  .floor-shadow {
+    background: radial-gradient(closest-side, rgba(0, 0, 0, 0.75), transparent);
   }
 
   /* Borde LED animado (inputs / botones al hacer focus) */
@@ -108,16 +505,55 @@ body {
   }
 }
 
+/* ===========================================================================
+   ANIMACIONES (solo transform / opacity → corren en el compositor)
+   ======================================================================== */
 @property --led-angle {
   syntax: '<angle>';
   initial-value: 0deg;
   inherits: false;
 }
+/* Color de ambiente del Color Studio: registrado para poder interpolarlo */
+@property --amb {
+  syntax: '<color>';
+  initial-value: #3a4658;
+  inherits: true;
+}
 
 @keyframes ledspin {
-  to {
-    --led-angle: 360deg;
-  }
+  to { --led-angle: 360deg; }
+}
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+@keyframes tray-in {
+  from { opacity: 0; transform: translate(-50%, 16px); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+@keyframes dialog-up {
+  from { opacity: 0; transform: translateY(24px); }
+}
+@keyframes dialog-left {
+  from { opacity: 0; transform: translateX(32px); }
+}
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(28px); }
+}
+@keyframes hero-car-in {
+  from { transform: translateY(18px) scale(0.92); }
+}
+.hero-in {
+  animation: hero-in 0.9s var(--ease-out) both;
+  animation-delay: var(--d, 0s);
+}
+.hero-car-in {
+  animation: hero-car-in 1.1s var(--ease-out) both;
 }
 
 /* Rejilla de perspectiva del hero */
@@ -130,13 +566,45 @@ body {
   transform-origin: center bottom;
 }
 
+/* Alturas de viewport estables en móvil (la barra de URL no hace saltar el layout) */
+.h-stage {
+  height: 100vh;
+  height: 100svh;
+}
+.min-h-stage {
+  min-height: 100vh;
+  min-height: 100svh;
+}
+
+/* ===========================================================================
+   GAMA BAJA (data-perf="lite", ver src/lib/device.js)
+   Se quitan los efectos de coste continuo; layout y contenido se mantienen.
+   ======================================================================== */
+[data-perf='lite'] .animate-floaty,
+[data-perf='lite'] .animate-bounce,
+[data-perf='lite'] .skeleton,
+[data-perf='lite'] .led-border:focus-within::before {
+  animation: none;
+}
+[data-perf='lite'] .grid-floor {
+  display: none;
+}
+[data-perf='lite'] .vehicle-card {
+  animation-duration: 0.2s;
+  animation-delay: 0s;
+}
+
 /* Respeta preferencia de movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }

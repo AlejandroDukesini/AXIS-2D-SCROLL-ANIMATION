@@ -1,156 +1,220 @@
-import { useEffect, useRef, useState } from 'react'
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-  useInView,
-  animate,
-} from 'framer-motion'
-import { Gauge, Zap, Tag } from 'lucide-react'
-import { GAMAS, waLink } from '../lib/shared'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { m, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
+import { ArrowRight, Calendar, Gauge, Zap } from 'lucide-react'
+import VehicleMedia from './media/VehicleMedia'
+import { CATEGORY_BY_ID, VEHICLES, formatKm, formatPrice, fullName } from '../data/vehicles'
+import { actions } from '../lib/store'
+import { waLink } from '../lib/shared'
+import { useMediaQuery, useRichMotion } from '../lib/device'
 
-// Modelos de la galería (una imagen real por gama)
-const MODELS = GAMAS.map((g) => ({
-  ...g,
-  specs: [
-    { icon: Zap, label: 'Potencia', value: g.stats.potencia, suffix: ' hp' },
-    { icon: Gauge, label: 'Vel. máx', value: g.stats.velocidad, suffix: ' km/h' },
-    { icon: Tag, label: 'Consumo', value: g.stats.consumo, suffix: ' km/l' },
-  ],
-}))
+const FEATURED = VEHICLES.filter((v) => v.featured)
 
+/**
+ * Destacados — galería horizontal.
+ *
+ *  - Desktop/tablet capaz: track sticky que se desplaza con el scroll vertical.
+ *    La altura de la sección se calcula a partir del ancho REAL del track
+ *    (ResizeObserver), de modo que 1 px de scroll = 1 px de desplazamiento:
+ *    se siente natural y no depende de un "-72%" fijo que se rompía al cambiar
+ *    el número de tarjetas o el ancho de pantalla.
+ *  - Móvil, gama baja o reduced-motion: carrusel nativo con scroll-snap. El
+ *    gesto horizontal es del usuario y lo resuelve el compositor: 0 JS.
+ */
 export default function Showcase() {
-  const ref = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end end'],
-  })
-  const p = useSpring(scrollYProgress, { stiffness: 80, damping: 22, mass: 0.5 })
-  // Desplaza el track horizontalmente según el scroll vertical.
-  const x = useTransform(p, [0, 1], ['2%', '-72%'])
+  const rich = useRichMotion()
+  const wide = useMediaQuery('(min-width: 768px)')
+  const cinematic = rich && wide
 
   return (
-    <section id="modelos" ref={ref} className="relative" style={{ height: '320vh' }}>
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
-        <div className="mx-auto mb-8 w-full max-w-7xl px-6">
-          <span className="eyebrow">03 — La Colección</span>
-          <h2 className="mt-2 font-display text-4xl tracking-wide text-chrome md:text-5xl">
-            Desliza para descubrir
-          </h2>
-        </div>
-
-        <motion.div style={{ x }} className="flex gap-6 pl-6 will-change-transform">
-          {MODELS.map((m) => (
-            <ModelCard key={m.id} model={m} />
-          ))}
-          <EndCard />
-        </motion.div>
-      </div>
+    <section id="modelos" className="section-anchor relative" aria-labelledby="dest-title">
+      {cinematic ? <StickyTrack /> : <SnapTrack />}
     </section>
   )
 }
 
-function ModelCard({ model }) {
+function Heading() {
+  return (
+    <div className="container-x mb-8">
+      <span className="eyebrow">03 — Destacados</span>
+      <h2 id="dest-title" className="section-title mt-2">
+        La selección del mes
+      </h2>
+    </div>
+  )
+}
+
+function StickyTrack() {
+  const sectionRef = useRef(null)
+  const trackRef = useRef(null)
+  const [distance, setDistance] = useState(0)
+  const dist = useMotionValue(0)
+
+  useLayoutEffect(() => {
+    const track = trackRef.current
+    const measure = () => {
+      const d = Math.max(0, track.scrollWidth - document.documentElement.clientWidth)
+      setDistance(d)
+      dist.set(d)
+    }
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(track)
+    return () => ro.disconnect()
+  }, [dist])
+
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start start', 'end end'] })
+  const p = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 })
+  const x = useTransform([p, dist], ([v, d]) => -v * d)
+
+  return (
+    <div ref={sectionRef} style={{ height: `calc(100svh + ${distance}px)` }}>
+      <div className="h-stage sticky top-0 flex flex-col justify-center overflow-hidden pt-[var(--nav-h)]">
+        <Heading />
+        <m.ul ref={trackRef} style={{ x }} className="flex w-max gap-6 px-[clamp(1rem,4vw,2.5rem)] will-change-transform">
+          {FEATURED.map((v) => (
+            <li key={v.slug} className="w-[min(46vw,40rem)] shrink-0">
+              <FeaturedCard v={v} />
+            </li>
+          ))}
+          <li className="w-[min(30vw,26rem)] shrink-0">
+            <EndCard />
+          </li>
+        </m.ul>
+      </div>
+    </div>
+  )
+}
+
+function SnapTrack() {
+  return (
+    <div className="py-24">
+      <Heading />
+      <ul
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-[clamp(1rem,4vw,2.5rem)] pb-4 [scrollbar-width:none]"
+        style={{ scrollPaddingInline: 'clamp(1rem, 4vw, 2.5rem)', overscrollBehaviorX: 'contain' }}
+        aria-label="Vehículos destacados, desplazable"
+      >
+        {FEATURED.map((v) => (
+          <li key={v.slug} className="w-[min(86vw,26rem)] shrink-0 snap-start">
+            <FeaturedCard v={v} />
+          </li>
+        ))}
+        <li className="w-[min(70vw,20rem)] shrink-0 snap-start">
+          <EndCard />
+        </li>
+      </ul>
+    </div>
+  )
+}
+
+function FeaturedCard({ v }) {
   const ref = useRef(null)
-  const inView = useInView(ref, { amount: 0.5 })
+  const inView = useInView(ref, { amount: 0.4, once: true })
+  const cat = CATEGORY_BY_ID[v.category]
 
   return (
     <article
       ref={ref}
-      className="relative flex h-[70vh] w-[85vw] shrink-0 flex-col justify-between overflow-hidden rounded-[32px] border border-white/5 bg-panel p-8 shadow-card md:w-[46vw]"
+      className="relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-white/5 bg-panel shadow-card"
+      aria-label={fullName(v)}
     >
-      {/* glow de fondo */}
       <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background: `radial-gradient(circle at 70% 20%, ${model.accent}22, transparent 55%)`,
-        }}
-      />
-
-      {/* revelado tipo máscara del auto */}
-      <motion.img
-        src={model.img}
-        alt={model.name}
-        loading="lazy"
-        decoding="async"
-        initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
-        animate={
-          inView
-            ? { clipPath: 'inset(0 0% 0 0)', opacity: 1 }
-            : { clipPath: 'inset(0 100% 0 0)', opacity: 0 }
-        }
-        transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute right-[-4%] top-[42%] w-[86%] -translate-y-1/2 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
-      />
-
-      <div className="relative z-10">
-        <span
-          className="text-xs uppercase tracking-mega"
-          style={{ color: model.accent }}
-        >
-          {model.tier}
-        </span>
-        <h3 className="mt-1 font-display text-5xl tracking-wide text-chrome">
-          {model.name}
-        </h3>
+        className="transition-[opacity,transform] duration-[900ms] ease-[cubic-bezier(0.16,1,0.3,1)]"
+        style={{ opacity: inView ? 1 : 0, transform: inView ? 'none' : 'translateX(-6%)' }}
+      >
+        <VehicleMedia vehicle={v} sizes="(min-width: 768px) 46vw, 86vw" />
       </div>
+      <div className="flex flex-1 flex-col p-6 md:p-8">
+        <span className="text-xs uppercase tracking-mega" style={{ color: cat.accent }}>
+          {cat.short} · {v.condition}
+        </span>
+        <h3 className="mt-1 font-display text-4xl leading-none tracking-wide text-chrome md:text-5xl">
+          {fullName(v)}
+        </h3>
+        <p className="mt-1 text-sm text-chromeDim">{v.trim}</p>
 
-      <div className="relative z-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-6">
-        {model.specs.map((s) => (
-          <div key={s.label} className="flex flex-col gap-1">
-            <s.icon className="h-4 w-4" style={{ color: model.accent }} />
-            <Counter
-              to={s.value}
-              suffix={s.suffix}
-              play={inView}
-              accent={model.accent}
-            />
-            <span className="text-[10px] uppercase tracking-wider text-chromeDim/70">
-              {s.label}
-            </span>
+        <dl className="mt-6 grid grid-cols-3 gap-4 border-t border-white/10 pt-5">
+          <div className="flex flex-col gap-1">
+            <dt className="order-last text-[11px] uppercase tracking-wider text-chromeDim">Potencia</dt>
+            <dd className="font-display text-2xl tracking-wide md:text-3xl" style={{ color: cat.accent }}>
+              <Zap className="mb-1 block h-4 w-4" style={{ color: cat.accent }} aria-hidden="true" />
+              <Counter to={v.power} play={inView} />
+              <span className="text-base text-chromeDim"> hp</span>
+            </dd>
           </div>
-        ))}
+          <div className="flex flex-col gap-1">
+            <dt className="order-last text-[11px] uppercase tracking-wider text-chromeDim">Año</dt>
+            <dd className="font-display text-2xl tracking-wide text-chrome md:text-3xl">
+              <Calendar className="mb-1 block h-4 w-4" style={{ color: cat.accent }} aria-hidden="true" />
+              {v.year}
+            </dd>
+          </div>
+          <div className="flex flex-col gap-1">
+            <dt className="order-last text-[11px] uppercase tracking-wider text-chromeDim">Recorrido</dt>
+            <dd className="font-display text-2xl tracking-wide text-chrome md:text-3xl">
+              <Gauge className="mb-1 block h-4 w-4" style={{ color: cat.accent }} aria-hidden="true" />
+              {formatKm(v.mileage)}
+            </dd>
+          </div>
+        </dl>
+
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-6">
+          <p className="font-display text-3xl tracking-wide text-chrome">{formatPrice(v.price)}</p>
+          <button type="button" onClick={() => actions.openVehicle(v.slug)} className="btn-ghost">
+            Ver ficha <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </article>
   )
 }
 
-/** Contador numérico que sube desde cero al entrar en viewport. */
-function Counter({ to, suffix = '', play, accent }) {
-  const [val, setVal] = useState(0)
+/**
+ * Contador que sube al entrar en viewport. Escribe el texto directamente en
+ * el nodo con rAF en vez de hacer setState por frame (antes: un re-render de
+ * React por frame y por contador). El valor final está en el HTML desde el
+ * principio, así que lectores de pantalla y buscadores ven el número real.
+ */
+function Counter({ to, play }) {
+  const ref = useRef(null)
   useEffect(() => {
-    if (!play) return
-    const controls = animate(0, to, {
-      duration: 1.2,
-      ease: [0.16, 1, 0.3, 1],
-      onUpdate: (v) => setVal(Math.round(v)),
-    })
-    return () => controls.stop()
+    const el = ref.current
+    if (!play || !el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    let raf
+    const t0 = performance.now()
+    const dur = 1100
+    const tick = (t) => {
+      const k = Math.min(1, (t - t0) / dur)
+      el.textContent = Math.round(to * (1 - Math.pow(1 - k, 4)))
+      if (k < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      el.textContent = to
+    }
   }, [play, to])
-
-  return (
-    <span className="font-display text-3xl tracking-wide" style={{ color: accent }}>
-      {val}
-      <span className="text-lg text-chromeDim">{suffix}</span>
-    </span>
-  )
+  return <span ref={ref}>{to}</span>
 }
 
 function EndCard() {
   return (
-    <article className="flex h-[70vh] w-[70vw] shrink-0 flex-col items-center justify-center gap-4 rounded-[32px] border border-electric/20 bg-electric/5 p-8 text-center md:w-[30vw]">
-      <p className="font-display text-6xl tracking-wide text-chrome-fill">
-        ¿Listo?
+    <div className="flex h-full min-h-[22rem] flex-col items-center justify-center gap-4 rounded-[2rem] border border-electric/20 bg-electric/5 p-8 text-center">
+      <p className="font-display text-5xl tracking-wide text-chrome-fill md:text-6xl">¿Buscas otro?</p>
+      <p className="max-w-xs text-sm text-chromeDim">
+        Tenemos {VEHICLES.length} vehículos en stock y conseguimos el que necesitas.
       </p>
+      <a href="#inventario" className="btn-primary">
+        Ver todo el inventario
+      </a>
       <a
-        href={waLink('Hola, vi los modelos en la web y quiero ver el catálogo completo.')}
+        href={waLink('Hola, vi los destacados en la web y quiero ver el catálogo completo.')}
         target="_blank"
         rel="noopener noreferrer"
-        className="rounded-full border border-electric/40 bg-electric/10 px-6 py-3 text-sm font-medium text-electric shadow-neon transition-transform hover:scale-105"
+        className="link-btn"
       >
-        Pide el catálogo por WhatsApp
+        Pedir catálogo por WhatsApp
       </a>
-    </article>
+    </div>
   )
 }

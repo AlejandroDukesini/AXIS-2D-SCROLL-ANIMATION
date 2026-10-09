@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion, useMotionValue } from 'framer-motion'
+import { m, useMotionValue } from 'framer-motion'
 import { RotateCw, Check } from 'lucide-react'
 import { CAR_IMG, PAINTS } from '../lib/shared'
 
@@ -7,7 +7,9 @@ import { CAR_IMG, PAINTS } from '../lib/shared'
  * Simulador de pintura. Recolorea el ÚNICO PNG blanco (vista cenital) usando:
  *  - una silueta enmascarada (mask-image) que aporta el color de carrocería,
  *  - el PNG encima con mix-blend-mode multiply para conservar vidrios/reflejos.
- * El cambio de color y de iluminación ambiental es un crossfade por transición.
+ * El cambio de iluminación ambiental interpola la variable --amb (registrada
+ * con @property en index.css): un gradiente normal no se puede transicionar y
+ * saltaba de golpe.
  * Se puede arrastrar el auto para girarlo (efecto 360°).
  */
 export default function ColorStudio() {
@@ -26,18 +28,22 @@ export default function ColorStudio() {
   }
 
   return (
-    <section id="color" className="relative overflow-hidden py-28">
+    <section
+      id="color"
+      className="section-anchor relative overflow-hidden py-24 md:py-28"
+      style={{ '--amb': paint.amb }}
+      aria-labelledby="color-title"
+    >
       {/* Iluminación ambiental que cambia con el color elegido */}
       <div
-        className="pointer-events-none absolute inset-0 transition-[background] duration-700"
-        style={{
-          background: `radial-gradient(circle at 50% 45%, ${paint.amb}, transparent 60%)`,
-        }}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 transition-[--amb] duration-700"
+        style={{ background: 'radial-gradient(circle at 50% 45%, var(--amb), transparent 60%)' }}
       />
 
-      <div className="relative mx-auto max-w-5xl px-6 text-center">
-        <span className="eyebrow">04 — Color Studio</span>
-        <h2 className="mt-2 font-display text-4xl tracking-wide text-chrome md:text-5xl">
+      <div className="container-x relative max-w-5xl text-center">
+        <span className="eyebrow">05 — Color Studio</span>
+        <h2 id="color-title" className="section-title mt-2">
           Píntalo a tu manera
         </h2>
         <p className="mx-auto mt-3 max-w-lg text-chromeDim">
@@ -47,13 +53,14 @@ export default function ColorStudio() {
 
         {/* Escenario del auto */}
         <div className="relative mx-auto mt-10 flex h-[340px] w-full max-w-[420px] items-center justify-center md:h-[420px]">
-          {/* halo bajo el auto */}
+          {/* halo bajo el auto: gradiente radial, sin filter: blur */}
           <div
-            className="absolute bottom-6 h-10 w-[60%] rounded-[100%] blur-2xl transition-colors duration-700"
-            style={{ background: `${paint.body}55` }}
+            aria-hidden="true"
+            className="absolute bottom-2 h-16 w-[70%] transition-opacity duration-700"
+            style={{ background: `radial-gradient(closest-side, ${paint.body}66, transparent)` }}
           />
 
-          <motion.div
+          <m.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.6}
@@ -70,20 +77,24 @@ export default function ColorStudio() {
             {/* Capa 2: detalle real del PNG (vidrios, reflejos) */}
             <img
               src={CAR_IMG}
-              alt={`Mazda en ${paint.name}`}
+              alt={`Vista cenital de un SUV en ${paint.name}, acabado ${paint.finish}`}
+              width={669}
+              height={373}
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 h-full w-full object-contain mix-blend-multiply"
               style={{ filter: paint.finish === 'mate' ? 'contrast(0.9)' : 'contrast(1.05)' }}
               draggable={false}
             />
-          </motion.div>
+          </m.div>
 
-          <span className="pointer-events-none absolute bottom-0 left-1/2 flex -translate-x-1/2 items-center gap-1.5 text-[10px] uppercase tracking-widest text-chromeDim/60">
+          <span className="pointer-events-none absolute bottom-0 left-1/2 flex -translate-x-1/2 items-center gap-1.5 text-[11px] uppercase tracking-widest text-chromeDim">
             <RotateCw className="h-3 w-3" /> Arrastra para girar
           </span>
         </div>
 
         {/* Nombre del acabado */}
-        <div className="mt-6 flex items-center justify-center gap-3">
+        <div className="mt-6 flex items-center justify-center gap-3" aria-live="polite">
           <span className="font-display text-2xl tracking-wide text-chrome">
             {paint.name}
           </span>
@@ -93,15 +104,17 @@ export default function ColorStudio() {
         </div>
 
         {/* Paleta de colores */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <div role="group" aria-label="Color de carrocería" className="mt-6 flex flex-wrap items-center justify-center gap-4">
           {PAINTS.map((c) => {
             const isActive = c.id === paint.id
             return (
               <button
                 key={c.id}
+                type="button"
                 onMouseEnter={() => setPaint(c)}
                 onClick={() => setPaint(c)}
-                aria-label={c.name}
+                aria-label={`${c.name}, ${c.finish}`}
+                aria-pressed={isActive}
                 className="relative grid h-11 w-11 place-items-center rounded-full transition-transform hover:scale-110"
                 style={{
                   background: c.body,
